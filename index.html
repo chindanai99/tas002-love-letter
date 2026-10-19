@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F5E8F7">
+  <meta name="description" content="จดหมายเล็ก ๆ ที่ตั้งใจเขียนให้คนพิเศษ">
+  <title>จดหมายถึงคนพิเศษ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Pridi:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --background: #F5E8F7;
+      --ink: #3a293c;
+      --muted: #665569;
+      --coral: #7b3f79;
+      --rose: #be567e;
+      --night: #3a293c;
+      --line: rgba(58, 41, 60, .35);
+      font-family: "Mali", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100svh;
+      margin: 0;
+      color: var(--ink);
+      background: var(--background);
+    }
+
+    button, input { font: inherit; }
+
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--coral);
+      outline-offset: 5px;
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      min-height: 100svh;
+      grid-template-rows: auto 1fr auto;
+      isolation: isolate;
+      overflow: hidden;
+      padding: clamp(22px, 4vw, 48px) clamp(22px, 7vw, 96px) 24px;
+      background: var(--background);
+    }
+
+    .stage::before, .stage::after {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      content: "";
+      pointer-events: none;
+    }
+
+    .stage::before {
+      background: transparent;
+      opacity: 1;
+    }
+
+    .stage::after {
+      background: transparent;
+    }
+
+    .topbar, .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .wordmark, .step-count, .footer { font-size: 12px; }
+
+    .wordmark { display: flex; align-items: center; gap: 10px; letter-spacing: 0; }
+    .wordmark-mark { color: var(--coral); font-size: 18px; }
+    .step-count { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .progress-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(58, 41, 60, .18);
+    }
+
+    .progress-fill {
+      width: 25%;
+      height: 100%;
+      background: var(--coral);
+      transition: width .45s ease;
+    }
+
+    main {
+      display: grid;
+      align-content: center;
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: 56px 0 64px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--coral);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    h1, h2, .message {
+      margin: 0;
+      font-family: "Pridi", serif;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    h1, h2 { max-width: 720px; font-size: clamp(34px, 6vw, 66px); line-height: 1.3; }
+    .intro-copy { max-width: 490px; margin: 17px auto 0; color: var(--muted); font-size: 14px; line-height: 1.9; }
+
+    .name-field { display: grid; gap: 9px; width: min(100%, 380px); margin: 29px auto 0; }
+    .name-field label { color: var(--muted); font-size: 12px; }
+    .name-field input {
+      width: 100%;
+      padding: 11px 0;
+      color: var(--ink);
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      font-size: 16px;
+      text-align: center;
+    }
+    .name-field input::placeholder { color: rgba(58, 41, 60, .58); }
+
+    .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 11px 19px;
+      color: #fffaf5;
+      border: 1px solid var(--coral);
+      border-radius: 2px;
+      background: var(--coral);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: color .2s ease, background .2s ease, transform .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); background: #663366; border-color: #663366; }
+    .button.secondary { color: var(--ink); border-color: var(--line); background: transparent; }
+    .button.secondary:hover { color: var(--night); border-color: var(--ink); background: var(--ink); }
+
+    .choice-list { display: grid; width: min(100%, 560px); gap: 10px; margin: 29px auto 0; }
+    .choice {
+      position: relative;
+      display: flex;
+      min-height: 53px;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 12px 16px;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: rgba(255, 255, 255, .46);
+      cursor: pointer;
+      text-align: center;
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+    .choice:hover { transform: translateX(4px); border-color: var(--coral); background: rgba(255, 255, 255, .82); }
+    .choice span:last-child { position: absolute; right: 16px; color: var(--coral); }
+
+    .message { max-width: 670px; margin: 22px auto 0; font-size: clamp(23px, 3.5vw, 37px); line-height: 1.65; }
+    .message-signoff { margin: 22px 0 0; color: var(--coral); font-size: 14px; }
+    .share-status { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+    .footer { color: var(--muted); }
+    .footer-note { margin: 0; }
+    .footer-heart { color: var(--coral); }
+
+    .screen { position: relative; }
+    .screen::before {
+      display: block;
+      content: "";
+      width: 128px;
+      aspect-ratio: 1;
+      margin: 0 auto 10px;
+      background: transparent var(--character-image, url("images/7408.jpg")) center / contain no-repeat;
+      mix-blend-mode: darken;
+      animation: character-bob 2.8s ease-in-out infinite;
+    }
+    .cover-screen::before {
+      width: 196px;
+      margin-bottom: 18px;
+      animation: character-float 3.4s ease-in-out infinite;
+    }
+    .cover-screen .eyebrow { animation: rise-in .65s .08s both; }
+    .cover-screen h1 { margin-inline: auto; animation: rise-in .7s .16s both; }
+    .cover-screen .intro-copy { animation: rise-in .7s .25s both; }
+    .cover-screen .name-field { animation: rise-in .7s .34s both; }
+    .cover-screen .actions { animation: rise-in .7s .43s both; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes reveal { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes character-bob { 50% { transform: translateY(-5px); } }
+    @keyframes character-float { 50% { transform: translateY(-9px) rotate(-2deg); } }
+    @keyframes rise-in { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 600px) {
+      .stage { padding-inline: 24px; }
+      main { padding: 44px 0 52px; }
+      .intro-copy { font-size: 13px; }
+      .footer { font-size: 11px; }
+      .cover-screen::before { width: 156px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress"></div></div>
+    <header class="topbar">
+      <div class="wordmark"><span class="wordmark-mark" aria-hidden="true">&#9829;</span><span>จดหมายที่ตั้งใจเขียน</span></div>
+      <div class="step-count" id="step-count" aria-live="polite">01 / 04</div>
+    </header>
+    <main id="content" aria-live="polite"></main>
+    <footer class="footer"><p class="footer-note">เขียนด้วยความคิดถึง <span class="footer-heart" aria-hidden="true">&#9829;</span></p><span>ถึงคนพิเศษของเรา</span></footer>
+  </div>
+
+  <script>
+    const content = document.querySelector("#content");
+    const progress = document.querySelector("#progress");
+    const stepCount = document.querySelector("#step-count");
+    const characterImages = ["7408.jpg", "7410_0.jpg", "7411_0.jpg", "7412_0.jpg"];
+    const finalMessages = [
+      ({ name, favorite }) => `${name} ขอบคุณที่เข้ามาเป็นรอยยิ้มและความสบายใจของเรา สิ่งที่เราชอบที่สุดคือ ${favorite} แค่มีเธออยู่ วันธรรมดาก็กลายเป็นวันที่พิเศษแล้ว รักเธอมากนะ`,
+      ({ name }) => `ตั้งแต่มี ${name} อยู่ข้าง ๆ โลกของเราก็อ่อนโยนขึ้น ขอบคุณที่จับมือกันในทุกวัน อยากมีเธอในวันธรรมดาและวันพิเศษไปอีกนานเลย`,
+      ({ name }) => `เราอาจไม่ได้พูดบ่อย แต่ดีใจทุกครั้งที่มี ${name} อยู่ตรงนี้ ขอบคุณสำหรับรอยยิ้มและเรื่องเล็ก ๆ ที่ทำให้หัวใจเราเต็ม รักเธอเสมอ`,
+      ({ name, favorite }) => `ช่วงเวลาที่เราชอบที่สุดคือเวลาที่มี ${name} อยู่ด้วย โดยเฉพาะตอน${favorite} ขอบคุณที่เป็นพื้นที่สบายใจของกันและกันนะ`,
+      ({ name }) => `ไม่ต้องมีเหตุผลพิเศษให้รักเลย แค่เป็น ${name} แบบนี้ก็ทำให้เรารักได้ทุกวัน ขอบคุณที่เป็นคนโปรดและเป็นบ้านของใจเรา`,
+      ({ name, favorite }) => `วันที่เหนื่อยแค่ได้คุยกับ ${name} ใจก็เบาขึ้นแล้ว เราชอบเวลาที่ได้${favorite}ด้วยกัน ขอบคุณที่ทำให้วันธรรมดาน่าอยู่เสมอ`,
+      ({ name }) => `ถ้าวันไหน ${name} เหนื่อย อยากให้รู้ว่ายังมีเราคอยอยู่ตรงนี้นะ ไม่ต้องเก่งตลอดเวลาก็ได้ แค่เป็นเธอ เราก็รักมากแล้ว`,
+      ({ name }) => `อยากเป็นหนึ่งในเหตุผลที่ทำให้ ${name} ยิ้มได้ในแต่ละวัน เหมือนที่เธอทำให้เรามีความสุขโดยไม่ต้องพยายามเลย`,
+      ({ name, favorite }) => `ขอบคุณที่รับฟังและเข้าใจกันเสมอ เรื่องที่เราอยากเก็บไว้ในความทรงจำที่สุดคือ${favorite}กับ ${name} นี่แหละ`,
+      ({ name }) => `ทุกครั้งที่มองไปข้างหน้า เราก็แอบหวังว่าจะมี ${name} อยู่ในภาพนั้นเสมอ มาสร้างวันธรรมดาที่แสนพิเศษไปด้วยกันนะ`,
+      ({ name, favorite }) => `เธอทำให้เราเห็นว่าความรักซ่อนอยู่ในเรื่องเล็ก ๆ อย่าง${favorite} ขอบคุณนะ ${name} ที่ทำให้หัวใจเราอบอุ่น`,
+      ({ name }) => `ไม่ว่าวันนี้จะเป็นวันที่ดีหรือวันที่หนักหน่อย ขอให้จำไว้ว่ายังมีคนคนหนึ่งที่ภูมิใจในตัว ${name} และรักเธอมากนะ`,
+      ({ name, favorite }) => `ถ้าเลือกเก็บช่วงเวลาดี ๆ ไว้ได้สักช่วง เราขอเลือกตอนที่ ${name} ${favorite} เพราะแค่คิดถึงก็ยิ้มได้แล้ว`,
+      ({ name }) => `เราไม่รู้หรอกว่าทุกวันข้างหน้าจะเป็นยังไง แต่รู้ว่าอยากค่อย ๆ เรียนรู้ เติบโต และหัวเราะไปพร้อมกับ ${name}`,
+      ({ name }) => `ถ้าให้เลือกคนเดิมได้อีกกี่ครั้ง เราก็ยังเลือก ${name} อยู่ดี ขอบคุณที่เข้ามาเป็นความรักที่อ่อนโยนของเรานะ`
+    ];
+    let sweetheart = "คนเก่งของเรา";
+    let favoriteThing = "";
+    let previousFinalMessage = -1;
+
+    function render(step) {
+      const percent = [25, 50, 75, 100][step - 1];
+      progress.style.width = `${percent}%`;
+      stepCount.textContent = `${String(step).padStart(2, "0")} / 04`;
+
+      if (step === 1) {
+        content.innerHTML = `
+          <section class="screen cover-screen">
+            <p class="eyebrow">จดหมายฉบับพิเศษ · เขียนจากใจเรา</p>
+            <h1>เธอคือความสุข<br>ในเรื่องธรรมดาของเรา</h1>
+            <p class="intro-copy">มีความในใจนิดหน่อย อยากค่อย ๆ เล่าให้ฟัง<br>พร้อมเปิดอ่านหรือยัง?</p>
+            <div class="name-field">
+              <label for="sweetheart-name">ชื่อแฟนของคุณ</label>
+              <input id="sweetheart-name" type="text" maxlength="32" placeholder="เช่น มะปราง" autocomplete="off" required>
+            </div>
+            <div class="actions"><button class="button" id="begin">เปิดจดหมายของเรา <span aria-hidden="true">&#8594;</span></button></div>
+          </section>`;
+        document.querySelector("#begin").addEventListener("click", () => {
+          const nameInput = document.querySelector("#sweetheart-name");
+          const name = nameInput.value.trim();
+          if (!name) {
+            nameInput.setCustomValidity("กรุณากรอกชื่อแฟนก่อนนะ");
+            nameInput.reportValidity();
+            return;
+          }
+          nameInput.setCustomValidity("");
+          sweetheart = name;
+          render(2);
+        });
+      }
+
+      if (step === 2) {
+        content.innerHTML = `
+          <section class="screen">
+            <p class="eyebrow">หน้า 02 · เรื่องที่เราชอบ</p>
+            <h2>รู้ไหมว่าเราชอบอะไร<br>ที่สุดเวลาอยู่กับเธอ</h2>
+            <div class="choice-list" role="group" aria-label="เลือกสิ่งที่เราชอบ">
+              <button class="choice" data-answer="รอยยิ้มของเธอ"><span>รอยยิ้มของเธอ</span><span aria-hidden="true">&#8594;</span></button>
+              <button class="choice" data-answer="ความใส่ใจในเรื่องเล็ก ๆ"><span>ความใส่ใจในเรื่องเล็ก ๆ</span><span aria-hidden="true">&#8594;</span></button>
+              <button class="choice" data-answer="ทุกเวลาที่ได้อยู่ด้วยกัน"><span>ทุกเวลาที่ได้อยู่ด้วยกัน</span><span aria-hidden="true">&#8594;</span></button>
+            </div>
+          </section>`;
+        content.querySelectorAll("[data-answer]").forEach((button) => {
+          button.addEventListener("click", () => {
+            favoriteThing = button.dataset.answer;
+            render(3);
+          });
+        });
+      }
+
+      if (step === 3) {
+        content.innerHTML = `
+          <section class="screen">
+            <p class="eyebrow">หน้า 03 · คำถามสำคัญ</p>
+            <h2>ถ้าต้องบอกรักเป็นจำนวน<br>จะบอกว่าเท่าไหร่ดีนะ</h2>
+            <div class="choice-list" role="group" aria-label="เลือกคำตอบบอกรัก">
+              <button class="choice" data-next><span>ทุกวันเลย</span><span aria-hidden="true">&#8594;</span></button>
+              <button class="choice" data-next><span>ทุกครั้งที่คิดถึง</span><span aria-hidden="true">&#8594;</span></button>
+              <button class="choice" data-next><span>มากกว่าที่คำพูดจะบอกได้</span><span aria-hidden="true">&#8594;</span></button>
+            </div>
+          </section>`;
+        content.querySelectorAll("[data-next]").forEach((button) => button.addEventListener("click", () => render(4)));
+      }
+
+      if (step === 4) {
+        const availableMessages = finalMessages
+          .map((message, index) => index)
+          .filter((index) => index !== previousFinalMessage);
+        previousFinalMessage = availableMessages[Math.floor(Math.random() * availableMessages.length)];
+        const finalMessage = finalMessages[previousFinalMessage]({ name: sweetheart, favorite: favoriteThing });
+        content.innerHTML = `
+          <section class="screen">
+            <p class="eyebrow">หน้า 04 · จากใจเรา</p>
+            <h2>${escapeHtml(sweetheart)}</h2>
+            <p class="message">${escapeHtml(finalMessage)}</p>
+            <p class="message-signoff">จากคนที่โชคดีที่สุดที่มีเธอ &#9829;</p>
+            <div class="actions">
+              <button class="button" id="share">ชวนคนอื่นมาเล่น <span aria-hidden="true">&#8599;</span></button>
+              <button class="button secondary" id="restart">อ่านอีกครั้ง</button>
+            </div>
+            <p id="share-status" class="share-status" aria-live="polite"></p>
+          </section>`;
+        document.querySelector("#restart").addEventListener("click", () => render(1));
+        document.querySelector("#share").addEventListener("click", shareMessage);
+      }
+
+      content.querySelector(".screen").style.setProperty(
+        "--character-image",
+        `url("images/${characterImages[step - 1]}")`
+      );
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      })[character]);
+    }
+
+    async function shareMessage() {
+      const message = "ลองเล่นจดหมายรักหน้านี้ดูนะ";
+      const pageUrl = window.location.href;
+      const status = document.querySelector("#share-status");
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "จดหมายถึงคนพิเศษ", text: message, url: pageUrl });
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(pageUrl);
+          status.textContent = "คัดลอกลิงก์แล้ว ส่งให้เพื่อนเข้ามาเล่นได้เลย";
+        } else {
+          status.textContent = `ส่งลิงก์นี้ให้เพื่อนเข้ามาเล่น: ${pageUrl}`;
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") status.textContent = "ส่งข้อความไม่สำเร็จ ลองอีกครั้งได้นะ";
+      }
+    }
+
+    render(1);
+  </script>
+</body>
+</html>
